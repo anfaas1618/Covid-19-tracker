@@ -4,7 +4,7 @@ package com.anfaas.covid_19tracker;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Summary {
+public class Summry {
 
     @SerializedName("total")
     @Expose

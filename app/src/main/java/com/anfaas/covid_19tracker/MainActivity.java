@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,78 +51,35 @@ public class MainActivity extends AppCompatActivity {
          StringRequest request=new StringRequest(url, new Response.Listener<String>() {
              @Override
              public void onResponse(String response) {
-                 Log.d(TAG, "onResponse: "+response);
+
+                 String[] jsons=response.split(",\"regional\":");
+                 String regions   =  jsons[1];
+                 String[] regions_final=regions.split(Pattern.quote("},\"last"));
+                 String json_regions=regions_final[0];
+
+                 String[] summary =jsons[0].split("\"summary\":");
+                 String json_summary=summary[1];
                  GsonBuilder gsonBuilder=new GsonBuilder();
-                 Gson gson= gsonBuilder.create();
-              Data[] regionals=  gson.fromJson(response.trim(),Data[].class);
+                 Gson gson =gsonBuilder.create();
+                 Summry summry=gson.fromJson(json_summary,Summry.class);
+                 Log.d(TAG, "onResponse: "+summry.getConfirmedCasesIndian());
+                 Log.d(TAG, "onResponse: "+json_regions.trim());
+                 GsonBuilder builder=new GsonBuilder();
+                 Gson gson1= builder.create();
+              Regional[] regionals=  gson1.fromJson(json_regions,Regional[].class);
+              for (Regional regional: regionals)
+              {
+                  Log.i(TAG, "onResponse: "+regional.getLoc());
+              }
 
              }
          }, new Response.ErrorListener() {
              @Override
              public void onErrorResponse(VolleyError error) {
-                 Log.e(TAG, "onErrorResponse: ",error );
+                 Log.e(TAG, "onErrorResponse:",error );
              }
          });
 
 queue.add(request);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public  class task extends AsyncTask<String,Void,Void>
-    {
-
-        @Override
-        protected Void doInBackground(String... strings)  {
-            JSONObject json = null;
-            try {
-                json = readJsonFromUrl("https://swapi.co/api/people/1/");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            System.out.println(json.toString());
-            try {
-                System.out.println(json.get("id"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-        private  String readAll(Reader rd) throws IOException {
-            StringBuilder sb = new StringBuilder();
-            int cp;
-            while ((cp = rd.read()) != -1) {
-                sb.append((char) cp);
-            }
-            return sb.toString();
-        }
-
-        public  JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
-            InputStream is = new URL(url).openStream();
-            try {
-                BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-                String jsonText = readAll(rd);
-                JSONObject json = new JSONObject(jsonText);
-                return json;
-            } finally {
-                is.close();
-            }
-        }
-    }
-
 }
